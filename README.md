@@ -1,16 +1,13 @@
 # 🏠 Nền tảng Web Bất Động Sản  
-*Đồ án cuối kỳ môn Công nghệ Java – Đại học Tôn Đức Thắng*
 
 ---
 
 ## 📄 Tổng quan
-Đây là **đồ án cuối kỳ** của môn Công nghệ Java tại Trường Đại học Tôn Đức Thắng.  
 Mục tiêu dự án là xây dựng một **nền tảng web bất động sản** hỗ trợ người dùng đăng tin, tìm kiếm, thuê hoặc mua bất động sản, đồng thời tích hợp thanh toán trực tuyến VNPay.
 
 - **Frontend:** Thymeleaf + HTML/CSS/Bootstrap/JavaScript  
 - **Backend:** Spring Boot, Spring Security, JWT  
 - **Cơ sở dữ liệu:** MySQL (với JPA/Hibernate)  
-- **Kiểm thử:** JUnit 5 và Mockito  
 - **Kiến trúc:** MVC  
 
 ---
@@ -75,16 +72,6 @@ Hệ thống sử dụng mô hình quan hệ với các bảng chính:
 
 ---
 
-## 🧪 Kiểm thử
-- Sử dụng **JUnit 5** để viết unit test cho service và controller  
-- Sử dụng **Mockito** để mock các dependency, kiểm thử độc lập các thành phần  
-- Chạy lệnh:
-```bash
-mvn test
-````
-
----
-
 ## 🖥️ Công nghệ sử dụng
 
 * **Spring Boot:** Xây dựng backend, REST API, tích hợp JPA/Hibernate
@@ -134,11 +121,3 @@ mvn test
 ## 📺 Video demo
 
 [Nhấn để xem video demo](https://drive.google.com/file/d/1u1LmBmobh4XlVKLZJ4WEDsfe3GaL0UJg/view?usp=sharing)
-
----
-
-## 👨‍💻 Nhóm thực hiện
-
-* **Nguyễn Công Quang** – 52200177 - Leader
-* **Võ Văn Thuận** – 52200133
-* **Phạm Gia Huy** – 52200101
