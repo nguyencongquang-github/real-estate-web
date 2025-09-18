@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết hóa đơn</title>
+    <link rel="stylesheet" href="/css/invoice.css"> <!-- Thêm CSS nếu cần -->
+</head>
+<body>
+    <div class="container">
+        <h1>Chi tiết hóa đơn</h1>
+        <div class="invoice-details">
+            <p><strong>Mã giao dịch:</strong> <span th:text="${transactionNo}"></span></p>
+            <p><strong>Số tiền:</strong> <span th:text="${amount}"></span> VND</p>
+            <p>
+                <strong>Trạng thái thanh toán:</strong>
+                <span th:style="'color: ' + (${isSuccess} ? 'green' : 'red')">
+                    <span th:text="${isSuccess} ? 'Thành công' : 'Thất bại'"></span>
+                </span>
+            </p>
+        </div>
+        <div class="back-button">
+            <a href="/">Quay lại trang chủ</a>
+        </div>
+    </div>
+</body>
+</html> 

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing Plans</title>
+    <link rel="stylesheet" href="/css/pricing.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+<div class="wrapper">
+    <div class="pricing-content">
+        <div class="PageWidth">
+            <div class="pricing-detail-content">
+                <div class="pricing-content-items-tabs">
+                    <div class="pricing-yearly">
+                        <div class="pricing-item">
+                            <div class="pricing-item-box">
+                                <div class="plan-name">User</div>
+                                <div class="plan-text"><span class="text-bold">Dành cho</span> người dùng muốn tìm kiếm bất động sản</div>
+
+                                <div class="plan-price-content">
+                                    <div class="plan-price">Miễn phí</div>
+                                </div>
+
+                                <div class="plan-features">
+                                    <div class="plan-feature-item">Xem danh sách bất động sản</div>
+                                    <div class="plan-feature-item">Xem chi tiết bất động sản</div>
+                                    <div class="plan-feature-item">Thuê bất động sản</div>
+                                    <div class="plan-feature-item">Lưu bất động sản yêu thích</div>
+                                </div>
+
+                                <div class="plan-button">
+                                    <a href="/register">Đăng ký ngay</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pricing-item">
+                            <div class="pricing-item-box">
+                                <span class="ribbon">Phổ biến</span>
+                                <div class="plan-name">Realtor</div>
+                                <div class="plan-text"><span class="text-bold">Dành cho</span> người muốn đăng bất động sản cho thuê</div>
+
+                                <div class="plan-price-content">
+                                    <div class="plan-price">$10<span class="month-text">/tháng</span></div>
+                                </div>
+
+                                <div class="plan-features">
+                                    <div class="plan-feature-item">Tất cả tính năng của User</div>
+                                    <div class="plan-feature-item">Đăng bất động sản cho thuê</div>
+                                    <div class="plan-feature-item">Quản lý danh sách bất động sản</div>
+                                    <div class="plan-feature-item">Nhận thông báo từ người thuê</div>
+                                    <div class="plan-feature-item">Thống kê doanh thu</div>
+                                    <div class="plan-feature-item">Hỗ trợ ưu tiên 24/7</div>
+                                </div>
+
+                                <div class="plan-button">
+                                    <a href="#" class="plan-button-blue" onclick="upgradeToPro()">Nâng cấp ngay</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function upgradeToPro() {
+        // Kiểm tra đã đăng nhập chưa
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+            alert('Vui lòng đăng nhập để nâng cấp tài khoản!');
+            window.location.href = '/';
+            return;
+        }
+
+        // Chuyển đổi 10 USD sang VND (1 USD = 24,000 VND)
+        const amountInVND = 10 * 24000;
+
+        // Gọi API thanh toán VNPay
+        fetch(`http://localhost:8080/payment/vn-pay?amount=${amountInVND}&bankCode=NCB`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Không thể tạo thanh toán');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.data && data.data.paymentUrl) {
+                    window.location.href = data.data.paymentUrl;
+                } else {
+                    throw new Error('URL thanh toán không hợp lệ');
+                }
+            })
+            .catch(error => {
+                alert('Đã xảy ra lỗi: ' + error.message);
+            });
+    }
+</script>
+
+</body>
+</html>

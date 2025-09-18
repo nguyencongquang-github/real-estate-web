@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Sign Up</title>
+
+    <!-- Font Icon -->
+    <link rel="stylesheet" href="/fonts/material-icon/css/material-design-iconic-font.min.css">
+
+    <!-- Main css -->
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <div class="main">  
+        <!-- Sign up form -->
+        <section class="signup">
+            <div class="container">
+                <div class="signup-content">
+                    <div class="signup-form">
+                        <h2 class="form-title">Đăng ký</h2>
+                        <form method="POST" class="register-form" id="register-form">
+                            <div class="form-group">
+                                <label for="name"><i class="zmdi zmdi-account material-icons-name" style="padding-left: 5px;"></i></label>
+                                <input type="text" name="name" id="name" placeholder="Họ và tên"/>
+                            </div>
+                            <div class="form-group">
+                                <label for="email"><i class="zmdi zmdi-email" style="padding-left: 5px;"></i></label>
+                                <input type="email" name="email" id="email" placeholder="Email"/>
+                            </div>
+                            <div class="form-group">
+                                <label for="pass"><i class="zmdi zmdi-eye-off toggle-password" style="padding-left: 5px;"></i></label>
+                                <input type="password" name="pass" id="pass" placeholder="Mật khẩu"/>
+                            </div>
+                            <div class="form-group">
+                                <label for="re-pass"><i class="zmdi zmdi-eye-off toggle-password" style="padding-left: 5px;"></i></label>
+                                <input type="password" name="re_pass" id="re_pass" placeholder="Nhập lại mật khẩu"/>
+                            </div>
+                            <div class="form-group">
+                                <input type="checkbox" name="agree-term" id="agree-term" class="agree-term" />
+                                <label for="agree-term" class="label-agree-term"><span><span></span></span>Tôi đồng ý với <a href="#" class="term-service">Điều khoản dịch vụ</a></label>
+                            </div>
+                            <div class="form-group form-button">
+                                <input type="submit" href="/otp.html" name="signup" id="signup" class="form-submit" value="Register"/>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="signup-image">
+                        <figure><img src="/images/signup-image.jpg" alt="sing up image"></figure>
+                        <a href="/" class="signup-image-link">Đã có tài khoản</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <script src="/vendor/jquery/jquery.min.js"></script>
+        <script src="/js/main.js"></script>
+        <script>
+            document.getElementById("register-form").addEventListener("submit", function (event) {
+            event.preventDefault(); // Ngăn chặn hành động mặc định của form
+
+            // Lấy giá trị từ các input
+            const name = document.getElementById("name").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("pass").value.trim();
+            const rePassword = document.getElementById("re_pass").value.trim();
+
+            // Kiểm tra xem mật khẩu và nhập lại mật khẩu có khớp không
+            if (password !== rePassword) {
+                alert("Mật khẩu không khớp. Vui lòng kiểm tra lại.");
+                return;
+            }
+
+            // Gửi yêu cầu đăng ký đến server
+            fetch("http://localhost:8080/auth/signup", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    username: name,
+                    password: password,
+                    email: email
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.message);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.email) {
+                    alert("Đăng ký thành công! Mã xác thực đã được gửi đến email của bạn.");
+                    localStorage.setItem("email", data.email);
+                    window.location.href = "/otp";
+                } else {
+                    throw new Error("Đăng ký không thành công");
+                }
+            })
+            .catch(error => {
+                alert(error.message || "Đã xảy ra lỗi. Vui lòng thử lại.");
+            });
+        });
+
+        document.querySelectorAll('.toggle-password').forEach((icon, index) => {
+            icon.addEventListener('click', function() {
+                // Lấy input tương ứng với icon được click
+                const input = index === 0 ? document.getElementById('pass') : document.getElementById('re_pass');
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    this.classList.remove('zmdi-eye-off');
+                    this.classList.add('zmdi-eye');
+                } else {
+                    input.type = 'password';
+                    this.classList.remove('zmdi-eye');
+                    this.classList.add('zmdi-eye-off');
+                }
+            });
+        });
+        </script>
+    </div>
+
+
+</body>
+</html>

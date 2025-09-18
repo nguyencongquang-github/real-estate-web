@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Page</title>
+    <link rel="stylesheet" href="/css/profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="profile">
+            <div class="profile-header">
+                <img class="profile-img" src="https://via.placeholder.com/150" alt="profile"/>
+                <div class="profile-text-container">
+                    <h1 class="profile-title">Nguyen Cong Quang</h1>
+                    <p class="profile-email">ncquang24@gmail.com</p>
+                </div>
+            </div>
+
+            <div class="menu">
+                <a href="#" class="menu-link" onclick="showAccountForm()"><i class="fa-solid fa-circle-user menu-icon"></i>Account</a>
+                <a href="#" class="menu-link"><i class="fa-solid fa-bell menu-icon"></i>Notification</a>
+                <a href="#" class="menu-link" onclick="showChangePasswordForm()"><i class="fa-solid fa-lock menu-icon"></i>Change password</a>
+                <a href="#" class="menu-link logout" style="color: #f44336;"><i class="fa-solid fa-right-from-bracket menu-icon" style="color: #f44336;"></i>Logout</a>
+            </div>
+        </div>
+
+        <!-- Account Form -->
+        <form action="" class="account" id="accountForm">
+            <div class="account-header">
+                <h1 class="account-title">Account Setting</h1>
+                <div class="btn-container">
+                    <button class="btn-cacel">Cancel</button>
+                    <button class="btn-save">Save</button>
+                </div>
+            </div>
+
+            <div class="account-edit">
+                <div class="input-container">
+                    <label for="">User name</label>
+                    <input type="text" placeholder="Username"/>
+                </div>
+            </div>
+            <div class="account-edit">
+                <div class="input-container">
+                    <label for="">Email</label>
+                    <input type="email" placeholder="Email"/>
+                </div>
+            </div>
+            <div class="account-edit">
+                <div class="input-container">
+                    <label for="">Phone number</label>
+                    <input type="text" placeholder="Phone number"/>
+                </div>
+            </div>
+            <div class="account-edit">
+                <div class="input-container">
+                    <label for="">Address</label>
+                    <textarea placeholder="Address"></textarea>
+                </div>
+            </div>
+        </form>
+
+        <!-- Change Password Form -->
+        <form action="" class="account" id="changePasswordForm" style="display: none;">
+            <div class="account-header">
+                <h1 class="account-title">Change Password</h1>
+                <div class="btn-container">
+                    <button type="button" class="btn-cacel" onclick="showAccountForm()">Cancel</button>
+                    <button type="submit" class="btn-save">Save</button>
+                </div>
+            </div>
+
+            <div class="account-edit">
+                <div class="input-container">
+                    <label for="">Current Password</label>
+                    <div class="password-field">
+                        <input type="password" placeholder="Enter current password"/>
+                        <i class="fa-regular fa-eye-slash toggle-password"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="account-edit">
+                <div class="input-container">
+                    <label for="">New Password</label>
+                    <div class="password-field">
+                        <input type="password" placeholder="Enter new password"/>
+                        <i class="fa-regular fa-eye-slash toggle-password"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="account-edit">
+                <div class="input-container">
+                    <label for="">Confirm New Password</label>
+                    <div class="password-field">
+                        <input type="password" placeholder="Confirm new password"/>
+                        <i class="fa-regular fa-eye-slash toggle-password"></i>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Thêm hàm để lấy thông tin người dùng
+        function fetchUserInfo() {
+            const accessToken = localStorage.getItem('accessToken');
+            
+            fetch('http://localhost:8080/users/my-info', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch user info');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Cập nhật thông tin trong profile header
+                document.querySelector('.profile-title').textContent = data.data.username;
+                document.querySelector('.profile-email').textContent = data.data.email;
+
+                // Cập nhật form account
+                document.querySelector('input[placeholder="Username"]').value = data.data.username;
+                document.querySelector('input[placeholder="Email"]').value = data.data.email;
+                document.querySelector('input[placeholder="Phone number"]').value = data.data.phone || '';
+                document.querySelector('textarea[placeholder="Address"]').value = data.data.address || '';
+
+                // Cập nhật ảnh profile nếu có
+                if (data.data.imageUrl) {
+                    document.querySelector('.profile-img').src = data.data.imageUrl;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Không thể lấy thông tin người dùng. Vui lòng đăng nhập lại.');
+                window.location.href = '/';
+            });
+        }
+
+        // Gọi hàm khi trang được load
+        document.addEventListener('DOMContentLoaded', fetchUserInfo);
+
+        // Thêm xử lý logout
+        document.querySelector('.logout').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                const accessToken = localStorage.getItem('accessToken');
+
+                // Gửi yêu cầu POST đến API logout
+                fetch('http://localhost:8080/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'x-token': accessToken // Gửi token trong header
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Đăng xuất không thành công');
+                    }
+                    // Xóa các token và thông tin người dùng trong localStorage
+                    localStorage.clear();
+                    // Chuyển về trang đăng nhập
+                    window.location.href = '/';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Đã xảy ra lỗi khi đăng xuất. Vui lòng thử lại.');
+                });
+            }
+        });
+
+        function showAccountForm() {
+            document.getElementById('accountForm').style.display = 'block';
+            document.getElementById('changePasswordForm').style.display = 'none';
+            // Highlight Account menu item
+            document.querySelectorAll('.menu-link').forEach(link => link.style.backgroundColor = '');
+            document.querySelector('.menu-link:first-child').style.backgroundColor = '#536dfe';
+            document.querySelector('.menu-link:first-child').style.color = '#fff';
+
+            document.querySelector('.menu-link:nth-child(3)').style.backgroundColor = '#fff';
+            document.querySelector('.menu-link:nth-child(3)').style.color = '#768499';
+
+        }
+
+        function showChangePasswordForm() {
+            document.getElementById('accountForm').style.display = 'none';
+            document.getElementById('changePasswordForm').style.display = 'block';
+            // Highlight Change Password menu item
+            document.querySelectorAll('.menu-link').forEach(link => {
+                link.style.backgroundColor = '';
+                link.style.color = '#768499';
+            });
+            document.querySelector('.menu-link:nth-child(3)').style.backgroundColor = '#536dfe';
+            document.querySelector('.menu-link:nth-child(3)').style.color = '#fff';
+
+            document.querySelector('.menu-link:first-child').style.backgroundColor = '#fff';
+            document.querySelector('.menu-link:first-child').style.color = '#768499';
+        }
+
+        // Thêm xử lý submit form change password
+        document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const currentPassword = document.querySelector('input[placeholder="Enter current password"]').value;
+            const newPassword = document.querySelector('input[placeholder="Enter new password"]').value;
+            const confirmPassword = document.querySelector('input[placeholder="Confirm new password"]').value;
+
+            // Validate mật khẩu
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                alert('Vui lòng điền đầy đủ thông tin');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                alert('Mật khẩu mới không khớp');
+                return;
+            }
+
+            if (newPassword.length < 8) {
+                alert('Mật khẩu mới phải có ít nhất 8 ký tự');
+                return;
+            }
+
+            const accessToken = localStorage.getItem('accessToken');
+            
+            fetch('http://localhost:8080/auth/change-password', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({
+                    currentPassword: currentPassword,
+                    newPassword: newPassword,
+                    confirmPassword: confirmPassword
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.message);
+                    });
+                }
+                alert('Mật khẩu đã được thay đổi thành công');
+                // Reset form
+                document.getElementById('changePasswordForm').reset();
+                // Chuyển về form account
+                showAccountForm();
+            })
+            .catch(error => {
+                alert(error.message || 'Đã xảy ra lỗi khi thay đổi mật khẩu');
+            });
+        });
+
+        document.querySelectorAll('.toggle-password').forEach(icon => {
+            icon.addEventListener('click', function() {
+                const input = this.previousElementSibling;
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    this.classList.remove('fa-eye-slash');
+                    this.classList.add('fa-eye');
+                } else {
+                    input.type = 'password';
+                    this.classList.remove('fa-eye');
+                    this.classList.add('fa-eye-slash');
+                }
+            });
+        });
+
+        
+    </script>
+</body>
+</html>

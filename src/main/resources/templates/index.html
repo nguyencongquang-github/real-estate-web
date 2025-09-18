@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Sign in</title>
+
+    <!-- Font Icon -->
+    <link rel="stylesheet" href="/fonts/material-icon/css/material-design-iconic-font.min.css">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWt+crB6NZIp8H+8Prnw1gCjI/QwB6l92qM+Szs4f4BB2YdwX1uCCmfdP5n3ypdb50" crossorigin="anonymous">
+
+    <!-- Main css -->
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="main">
+        <!-- Sing in  Form -->
+        <section class="sign-in">
+            <div class="container">
+                <div class="signin-content">
+                    <div class="signin-image">
+                        <figure><img src="/images/signin-image.jpg" alt="sing up image"></figure>
+                        <a href="/register" class="signup-image-link">Đăng ký</a>
+                    </div>
+
+                    <div class="signin-form">
+                        <h2 class="form-title">Đăng nhập</h2>
+                        <form method="POST" class="register-form" id="login-form">
+                            <div class="form-group">
+                                <label for="your_name"><i class="zmdi zmdi-account material-icons-name" style="padding-left: 5px;"></i></label>
+                                <input type="text" name="your_name" id="your_name" placeholder="Email"/>
+                            </div>
+                            <div class="form-group">
+                                <label for="your_pass"><i class="zmdi zmdi-eye-off toggle-password" style="padding-left: 5px;"></i></label>
+                                <input type="password" name="your_pass" id="your_pass" placeholder="Mật khẩu"/>
+                            </div>
+                            <div class="form-group">
+                                <input type="checkbox" name="remember-me" id="remember-me" class="agree-term" />
+                                <label for="remember-me" class="label-agree-term"><span><span></span></span>Ghi nhớ tôi</label>
+                            </div>
+                            <div class="form-group text-center">
+                                <a href="/forgot-password" class="text-primary">Quên mật khẩu?</a>
+                            </div>
+                            <div class="form-group form-button">
+                                <input type="submit" name="loginButton" id="loginButton" class="form-submit" value="Đăng nhập"/>
+                            </div>
+                        </form>
+                        <div class="social-login">
+                            <span class="social-label">Hoặc đăng nhập với</span>
+                            <ul class="socials">
+                                <li><a href="#"><i class="display-flex-center zmdi zmdi-facebook"></i></a></li>
+                                <li><a href="#"><i class="display-flex-center zmdi zmdi-twitter"></i></a></li>
+                                <li><a href="#"><i class="display-flex-center zmdi zmdi-google"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- JS -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/js/main.js"></script>
+    
+
+    <script>
+        document.getElementById("loginButton").addEventListener("click", function (event) {
+            event.preventDefault();
+            const email = document.getElementById("your_name").value.trim();
+            const password = document.getElementById("your_pass").value.trim();
+
+            fetch("http://localhost:8080/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        return response.json().then((errorData) => {
+                            alert("Đã xảy ra lỗi! Vui lòng thử lại.");
+                        });
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    localStorage.setItem("accessToken", data.accessToken);
+                    localStorage.setItem("refreshToken", data.refreshToken);
+                    localStorage.setItem("userId", data.userId);
+                    localStorage.setItem("role", data.role);
+
+                    if (data.role === "ADMIN") {
+                        alert("Đăng nhập thành công! Chào mừng Admin.");
+                        // window.location.href = "/admin/dashboard.html";
+                    } else {
+                        alert("Đăng nhập thành công!");
+                        window.location.href = "/home";
+                    }
+                })
+                .catch((error) => {
+                    console.error("Lỗi:", error.message);
+                    alert("Đã xảy ra lỗi! Vui lòng thử lại.");
+                });
+        });
+
+        document.querySelector('.toggle-password').addEventListener('click', function() {
+        const input = document.getElementById('your_pass');
+        if (input.type === 'password') {
+            input.type = 'text';
+            this.classList.remove('zmdi-eye-off');
+            this.classList.add('zmdi-eye');
+        } else {
+            input.type = 'password';
+            this.classList.remove('zmdi-eye');
+            this.classList.add('zmdi-eye-off');
+        }
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP</title>
+    <link rel="stylesheet" href="/css/otp.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="/css/base.css">
+</head>
+<body class="container-fluid bg-body-tertiary d-block">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-6 col-lg-4" style="min-width: 500px;">
+            <div class="card bg-white mb-5 mt-5 border-0" style="box-shadow: 0 12px 15px rgba(0, 0, 0, 0.02);">
+                <div class="card-body p-5 text-center">
+                    <h4>Xác thực</h4>
+                    <p>Mã xác thực đã được gửi đến email của bạn</p>
+
+                    <div class="otp-field mb-4">
+                        <input type="number" id="otp1" maxlength="1" />
+                        <input type="number" id="otp2" maxlength="1" />
+                        <input type="number" id="otp3" maxlength="1" />
+                        <input type="number" id="otp4" maxlength="1" />
+                        <input type="number" id="otp5" maxlength="1" />
+                        <input type="number" id="otp6" maxlength="1" />
+                    </div>
+
+                    <button class="btn btn-primary mb-3" id="verifyButton">
+                        Xác thực
+                    </button>
+
+                    <p class="resend text-muted mb-0">
+                        Không nhận được mã? <a href="#" id="resendButton">Yêu cầu lại</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const inputs = document.querySelectorAll(".otp-field > input");
+        const button = document.querySelector(".btn");
+
+        window.addEventListener("load", () => inputs[0].focus());
+        button.setAttribute("disabled", "disabled");
+
+        inputs[0].addEventListener("paste", function (event) {
+        event.preventDefault();
+
+        const pastedValue = (event.clipboardData || window.clipboardData).getData(
+            "text"
+        );
+        const otpLength = inputs.length;
+
+        for (let i = 0; i < otpLength; i++) {
+            if (i < pastedValue.length) {
+            inputs[i].value = pastedValue[i];
+            inputs[i].removeAttribute("disabled");
+            inputs[i].focus;
+            } else {
+            inputs[i].value = ""; // Clear any remaining inputs
+            inputs[i].focus;
+            }
+        }
+        });
+
+        inputs.forEach((input, index1) => {
+        input.addEventListener("keyup", (e) => {
+            const currentInput = input;
+            const nextInput = input.nextElementSibling;
+            const prevInput = input.previousElementSibling;
+
+            if (currentInput.value.length > 1) {
+            currentInput.value = "";
+            return;
+            }
+
+            if (
+            nextInput &&
+            nextInput.hasAttribute("disabled") &&
+            currentInput.value !== ""
+            ) {
+            nextInput.removeAttribute("disabled");
+            nextInput.focus();
+            }
+
+            if (e.key === "Backspace") {
+            inputs.forEach((input, index2) => {
+                if (index1 <= index2 && prevInput) {
+                input.setAttribute("disabled", true);
+                input.value = "";
+                prevInput.focus();
+                }
+            });
+            }
+
+            button.classList.remove("active");
+            button.setAttribute("disabled", "disabled");
+
+            const inputsNo = inputs.length;
+            if (!inputs[inputsNo - 1].disabled && inputs[inputsNo - 1].value !== "") {
+            button.classList.add("active");
+            button.removeAttribute("disabled");
+
+            return;
+        }
+                });
+            });
+
+        document.getElementById("verifyButton").addEventListener("click", function () {
+            // Lấy giá trị từ các ô nhập mã xác minh
+            const otp1 = document.getElementById("otp1").value.trim();
+            const otp2 = document.getElementById("otp2").value.trim();
+            const otp3 = document.getElementById("otp3").value.trim();
+            const otp4 = document.getElementById("otp4").value.trim();
+            const otp5 = document.getElementById("otp5").value.trim();
+            const otp6 = document.getElementById("otp6").value.trim();
+
+            const verificationCode = otp1 + otp2 + otp3 + otp4 + otp5 + otp6;
+            const email = localStorage.getItem("email");
+
+            fetch("http://localhost:8080/auth/verify", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    email: email, 
+                    verificationCode: verificationCode
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.message);
+                    });
+                } else {
+                    alert("Đăng ký thành công!");
+                    window.location.href = "/"; 
+                }
+            })
+            .catch(error => {
+                alert(error.message || "Đã xảy ra lỗi. Vui lòng thử lại.");
+            });
+        });
+
+        document.getElementById("resendButton").addEventListener("click", function(e) {
+            e.preventDefault();
+            const email = localStorage.getItem("email");
+            
+            fetch("http://localhost:8080/auth/resend", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    email: email
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.message);
+                    });
+                }
+                alert("Mã xác thực mới đã được gửi đến email của bạn!");
+            })
+            .catch(error => {
+                alert(error.message || "Không thể gửi lại mã. Vui lòng thử lại.");
+            });
+        });
+    </script>
+</body>
+</html>

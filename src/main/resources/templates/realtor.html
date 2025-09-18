@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realtor Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5">
+    <h1 class="text-center">Realtor Dashboard</h1>
+
+
+    <div class="row g-2 align-items-center" style="margin-top: 15px">
+        <div class="col-auto">
+            <input type="text" id="search-input" class="form-control" placeholder="Search..." aria-label="Search" onkeydown="checkEnter(event)">
+        </div>
+
+        <div class="col-auto">
+            <button class="btn btn-primary" onclick="searchListings()">Search</button>
+        </div>
+    </div>
+
+
+    <!-- Nút Thêm Listing -->
+    <button class="btn btn-success btn-lg" id="addListingBtn" type="button" data-bs-toggle="modal" data-bs-target="#listingFormModal" style="margin-top: 20px">Add New Listing</button>
+
+    <input type="hidden" id="realtorId" value="1">
+
+    <!-- Bảng Hiển Thị Listings -->
+    <table class="table table-bordered mt-4" id="listingTable">
+        <thead>
+        <tr style="text-align: center">
+            <th>Name</th>
+            <th>Address</th>
+            <th>Area</th>
+            <th>Price</th>
+            <th>Description</th>
+            <th>Type</th>
+            <th>Transaction Type</th>
+            <th>Status</th>
+            <th>Images</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody id="listings-list">
+        <!-- fetch du lieu -->
+        </tbody>
+    </table>
+</div>
+
+<div style="display: flex; justify-content: center; margin-top: 60px">
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+            <li class="page-item">
+                <button class="page-link"><span aria-hidden="true">&laquo;</span></button>
+            </li>
+            <li class="page-item"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <li class="page-item">
+                <a class="page-link" href="#" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+
+<!-- Modal Add Listing-->
+<div class="modal fade" id="listingFormModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Add New Listing</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="listingForm">
+                    <!-- Name -->
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <!-- Address -->
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <input type="text" class="form-control" id="address" name="address" required>
+                    </div>
+                    <!-- Area -->
+                    <div class="mb-3">
+                        <label for="area" class="form-label">Area</label>
+                        <input type="text" class="form-control" id="area" name="area" required>
+                    </div>
+                    <!-- Price -->
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Price</label>
+                        <input type="number" step="0.01" class="form-control" id="price" name="price" required>
+                    </div>
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                    </div>
+                    <!-- Type -->
+                    <div class="mb-3">
+                        <label for="type" class="form-label">Type</label>
+                        <select class="form-select" id="type" name="type" required>
+                            <option value="House">House</option>
+                            <option value="Apartment">Apartment</option>
+                        </select>
+                    </div>
+                    <!-- Transaction Type -->
+                    <div class="mb-3">
+                        <label for="transactionType" class="form-label">Transaction Type</label>
+                        <select class="form-select" id="transactionType" name="transactionType" required>
+                            <option value="Sale">Sale</option>
+                            <option value="Rent">Rent</option>
+                        </select>
+                    </div>
+                    <!-- Status -->
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="Available">Available</option>
+                            <option value="Sold">Sold</option>
+                        </select>
+                    </div>
+                    <!-- Images -->
+                    <div class="mb-3">
+                        <label for="images" class="form-label">Upload Images</label>
+                        <input class="form-control" type="file" id="images" name="images" multiple required>
+                    </div>
+                    <!-- Preview Images -->
+                    <div id="imagePreviews" class="d-flex"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success" id="saveListingBtn">Save Listing</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Modal Update Listing-->
+<div class="modal fade" id="updateListingFormModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitleUpdate">Add New Listing</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="updateListingForm">
+                    <input type="hidden" id="listingsId">
+                    <!-- Name -->
+                    <div class="mb-3">
+                        <label for="name-update" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name-update" name="name-update" required>
+                    </div>
+                    <!-- Address -->
+                    <div class="mb-3">
+                        <label for="address-update" class="form-label">Address</label>
+                        <input type="text" class="form-control" id="address-update" name="address-update" required>
+                    </div>
+                    <!-- Area -->
+                    <div class="mb-3">
+                        <label for="area-update" class="form-label">Area</label>
+                        <input type="text" class="form-control" id="area-update" name="area-update" required>
+                    </div>
+                    <!-- Price -->
+                    <div class="mb-3">
+                        <label for="price-update" class="form-label">Price</label>
+                        <input type="number" step="0.01" class="form-control" id="price-update" name="price-update" required>
+                    </div>
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label for="description-update" class="form-label">Description</label>
+                        <textarea class="form-control" id="description-update" name="description-update" rows="3" required></textarea>
+                    </div>
+                    <!-- Type -->
+                    <div class="mb-3">
+                        <label for="type-update" class="form-label">Type</label>
+                        <select class="form-select" id="type-update" name="type-update" required>
+                            <option value="House">House</option>
+                            <option value="Apartment">Apartment</option>
+                        </select>
+                    </div>
+                    <!-- Transaction Type -->
+                    <div class="mb-3">
+                        <label for="transactionType-update" class="form-label">Transaction Type</label>
+                        <select class="form-select" id="transactionType-update" name="transactionType-update" required>
+                            <option value="Sale">Sale</option>
+                            <option value="Rent">Rent</option>
+                        </select>
+                    </div>
+                    <!-- Status -->
+                    <div class="mb-3">
+                        <label for="status-update" class="form-label">Status</label>
+                        <select class="form-select" id="status-update" name="status-update" required>
+                            <option value="Available">Available</option>
+                            <option value="Sold">Sold</option>
+                        </select>
+                    </div>
+                    <!-- Images -->
+                    <div class="mb-3">
+                        <label for="images-update" class="form-label">Upload Images</label>
+                        <input class="form-control" type="file" id="images-update" name="images-update" multiple required>
+                    </div>
+                    <!-- Preview Images -->
+                    <div id="imagePreviews-update" class="d-flex"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-warning" id="updateListingBtn">Update Listing</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // JavaScript code to handle form submission and preview images
+</script>
+</body>
+</html>
+
+<script>
+    function checkEnter(event) {
+        // Kiểm tra nếu người dùng nhấn Enter (keyCode 13)
+        if (event.key === 'Enter') {
+            event.preventDefault(); // Ngừng hành động mặc định của phím Enter (nếu có)
+            searchListings(); // Gọi hàm searchListings
+        }
+    }
+</script>
+
+<script>
+    async function deleteListings(id) {
+        const confirmDelete = confirm("Do you want to delete this property?")
+        if (confirmDelete) {
+            const response = await fetch(`/api/listings/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                await searchListings();
+            } else {
+                alert("Do not delete property")
+            }
+        }
+    }
+</script>
+
+<script>
+    document.getElementById("saveListingBtn").addEventListener("click", async function (event) {
+        event.preventDefault(); // Ngăn hành vi mặc định
+
+        // Lấy dữ liệu từ form
+        const name = document.getElementById("name").value;
+        const address = document.getElementById("address").value;
+        const area = document.getElementById("area").value;
+        const price = parseFloat(document.getElementById("price").value);
+        const description = document.getElementById("description").value;
+        const type = document.getElementById("type").value;
+        const transactionType = document.getElementById("transactionType").value;
+        const status = document.getElementById("status").value;
+        const imagesInput = document.getElementById("images").files;
+
+        var form = document.getElementById("listingForm");
+
+        if (form.checkValidity()) {
+            // Nếu form hợp lệ, có thể gửi (hoặc xử lý form ở đây)
+            console.log("Form is valid!");
+            // Bạn có thể gọi API hoặc gửi dữ liệu ở đây
+            // Tạo đối tượng ListingsDTO
+            const listingsDTO = {
+                realtor_id,
+                name,
+                address,
+                area,
+                price,
+                description,
+                type,
+                transactionType,
+                status
+            };
+
+            // Tạo FormData để gửi dữ liệu dạng multipart/form-data
+            const formData = new FormData();
+
+            // Thêm ListingsDTO (dạng JSON string) vào FormData
+            formData.append("listings", new Blob([JSON.stringify(listingsDTO)], { type: "application/json" }));
+
+            // Thêm các file ảnh vào FormData
+            for (let i = 0; i < imagesInput.length; i++) {
+                formData.append("images", imagesInput[i]);
+            }
+
+            try {
+                // Gửi dữ liệu tới API
+                const response = await fetch("/api/listings", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    alert("Listing added successfully!");
+                    const modal =  bootstrap.Modal.getInstance(document.getElementById("listingFormModal"))
+                    modal.hide();
+
+                    // Xóa backdrop nếu còn tồn tại
+                    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+
+                    document.getElementById("listingForm").reset();
+                    await searchListings();
+                } else {
+                    const error = await response.json();
+                    console.error("Error:", error);
+                    alert("Please fill in all information fields");
+                }
+            } catch (err) {
+                console.error("Error submitting form:", err);
+                alert("An error occurred while saving the listing.");
+            }
+        } else {
+            // Nếu form không hợp lệ, hiển thị thông báo lỗi
+            console.log("Form is invalid!");
+            form.reportValidity();  // Trình duyệt sẽ tự động hiển thị các lỗi nếu có
+        }
+
+    });
+
+</script>
+
+<script>
+    function updateListings(id) {
+        // Gọi API để lấy thông tin listing theo id
+        fetch(`/api/listings/${id}`)
+            .then(response => response.json())  // Chuyển đổi dữ liệu từ JSON
+            .then(listing => {
+                // Cập nhật các trường trong modal
+                document.getElementById("listingsId").value = id;
+                document.getElementById("name-update").value = listing.name || '';
+                document.getElementById("address-update").value = listing.address || '';
+                document.getElementById("area-update").value = listing.area || '';
+                document.getElementById("price-update").value = listing.price || '';
+                document.getElementById("description-update").value = listing.description || '';
+                document.getElementById("type-update").value = listing.type || '';
+                document.getElementById("transactionType-update").value = listing.transactionType || '';
+                document.getElementById("status-update").value = listing.status || '';
+
+                // Hiển thị ảnh cũ trong phần preview
+                const imagesPreviewField = document.getElementById("imagePreviews-update");
+                let imagesHTML = '';
+                if (listing.images && listing.images.length > 0) {
+                    listing.images.forEach(image => {
+                        imagesHTML += `<img src="${image.imageUrl}" alt="image" class="img-thumbnail mr-2 mb-2"
+                        style="width: 100px; height: 100px;" />`;
+                    });
+                }
+                imagesPreviewField.innerHTML = imagesHTML;
+
+                // Xóa giá trị của input file để không lưu ảnh mới nếu không chọn
+                document.getElementById("images-update").value = "";
+            })
+            .catch(error => {
+                console.error('Error fetching listing:', error);
+            });
+    }
+
+    // Update Listings
+    document.getElementById("updateListingBtn").addEventListener("click", async function (event) {
+        event.preventDefault();
+
+        const listingsId = document.getElementById("listingsId").value;
+        const realtor_id = document.getElementById("realtorId").value;
+        const name = document.getElementById("name-update").value;
+        const address = document.getElementById("address-update").value;
+        const area = document.getElementById("area-update").value;
+        const price = parseFloat(document.getElementById("price-update").value);
+        const description = document.getElementById("description-update").value;
+        const type = document.getElementById("type-update").value;
+        const transactionType = document.getElementById("transactionType-update").value;
+        const status = document.getElementById("status-update").value;
+        const imagesInput = document.getElementById("images-update").files;
+
+        var form = document.getElementById("updateListingForm");
+
+        if (form.checkValidity()) {
+            // Nếu form hợp lệ, có thể gửi (hoặc xử lý form ở đây)
+            console.log("Form is valid!");
+            // Bạn có thể gọi API hoặc gửi dữ liệu ở đây
+            // Tạo đối tượng ListingsDTO
+            const listingsDTO = {
+                realtor_id,
+                name,
+                address,
+                area,
+                price,
+                description,
+                type,
+                transactionType,
+                status
+            };
+
+            // Tạo FormData để gửi dữ liệu dạng multipart/form-data
+            const formData = new FormData();
+
+            // Thêm ListingsDTO (dạng JSON string) vào FormData
+            formData.append("listings", new Blob([JSON.stringify(listingsDTO)], {type: "application/json"}));
+
+            for (let i = 0; i < imagesInput.length; i++) {
+                formData.append("images", imagesInput[i]);
+            }
+
+
+            try {
+                // Gửi dữ liệu tới API
+                const response = await fetch(`/api/listings/${listingsId}`, {
+                    method: "PUT",
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    alert("Listing updated successfully!");
+                    const modal = bootstrap.Modal.getInstance(document.getElementById("updateListingFormModal"))
+                    modal.hide();
+
+                    // Xóa backdrop nếu còn tồn tại
+                    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+
+                    document.getElementById("updateListingForm").reset();
+                    searchListings();
+                } else {
+                    alert("Please fill in all information fields");
+                }
+            } catch (err) {
+                console.error("Error submitting form:", err);
+                alert("An error occurred while updating the listing.");
+            }
+        } else {
+            // Nếu form không hợp lệ, hiển thị thông báo lỗi
+            console.log("Form is invalid!");
+            form.reportValidity();  // Trình duyệt sẽ tự động hiển thị các lỗi nếu có
+        }
+
+    })
+
+</script>
+
+<script>
+    document.getElementById("images").addEventListener("change", function (event) {
+        const files = event.target.files;
+        const previewsContainer = document.getElementById("imagePreviews");
+        previewsContainer.innerHTML = ""; // Xóa các preview trước đó
+
+        Array.from(files).forEach((file) => {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = document.createElement("img");
+                img.src = e.target.result;
+                img.className = "img-thumbnail mr-2 mb-2";
+                img.style.width = "100px"; // Kích thước preview
+                img.style.height = "100px";
+                previewsContainer.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+
+    document.getElementById("images-update").addEventListener("change", function (event) {
+        const files = event.target.files;
+        const previewsContainer = document.getElementById("imagePreviews-update");
+        previewsContainer.innerHTML = ""; // Xóa các preview trước đó
+
+        Array.from(files).forEach((file) => {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = document.createElement("img");
+                img.src = e.target.result;
+                img.className = "img-thumbnail mr-2 mb-2";
+                img.style.width = "100px"; // Kích thước preview
+                img.style.height = "100px";
+                previewsContainer.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+
+</script>
+
+<!--Tìm kiếm và phân trang-->
+<script>
+    let currentPage = 0;
+    let pageSize = 0;
+
+    async function searchListings() {
+        try {
+            const searchQuery = document.getElementById("search-input").value;
+            const response = await fetch(`/api/listings/filter?name=${searchQuery}&p=${currentPage}`)
+            if (response.ok) {
+                const listings = await response.json();
+                pageSize = listings.totalPages;
+
+                let listingHTML = ""; // Khởi tạo một biến chứa HTML của bảng
+
+                // Duyệt qua danh sách các listings và tạo HTML cho mỗi dòng
+                listings.content.forEach(listing => {
+                    // Tạo HTML cho mỗi listing
+                    let imagesHTML = ""; // Khởi tạo danh sách ảnh
+
+                    // Nếu mỗi listing có danh sách ảnh, duyệt qua và tạo các thẻ img
+                    listing.images.forEach(image => {
+                        imagesHTML += `
+                            <img src="${image.imageUrl}" alt="${image.altText}" class="img-thumbnail"
+                            style="width: 80px; width: 80px; margin-right: 5px">
+                        `;
+                    });
+
+                    // Tạo HTML cho từng dòng trong bảng
+                    listingHTML += `
+                        <tr>
+                            <td>${listing.name}</td>
+                            <td>${listing.address}</td>
+                            <td>${listing.area}</td>
+                            <td>$${listing.price}</td>
+                            <td>${listing.description}</td>
+                            <td>${listing.type}</td>
+                            <td>${listing.transactionType}</td>
+                            <td>${listing.status}</td>
+                            <td>
+                                <!-- Hiển thị danh sách ảnh -->
+                                ${imagesHTML}
+                            </td>
+                            <td class="d-grid gap-2 d-md-flex justify-content-md-center">
+                                <button type="button" class="btn btn-warning mr-2" data-bs-toggle="modal"
+                                data-bs-target="#updateListingFormModal" id="editListings" onclick="updateListings(${listing.id})">Update</button>
+                                <button type="button" class="btn btn-danger" onclick="deleteListings(${listing.id})">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                document.getElementById("listings-list").innerHTML = listingHTML
+                updatePagination(pageSize);
+            } else {
+                alert("Error");
+            }
+
+        } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+            alert("Có lỗi xảy ra khi lấy danh sách người dùng.");
+        }
+    }
+    function updatePagination(totalPages) {
+        const paginationElement = document.querySelector(".pagination");
+        paginationElement.innerHTML = "";
+
+        // nut lui trang
+        const prevButton = document.createElement("li");
+        prevButton.className = "page-item";
+        prevButton.innerHTML = `<button class="page-link" onclick="changePage('prev', event)"><span aria-hidden="true">&laquo;</span></button`;
+        paginationElement.appendChild(prevButton);
+
+        // tao nut trang 1, 2, 3,...
+        for (let i = 1; i <= pageSize; i++) {
+            const pageItem = document.createElement("li");
+            pageItem.className = `page-item ${i - 1 === currentPage ? 'active' : ''}`; // Thêm class 'active' nếu là trang hiện tại
+            pageItem.innerHTML = `<a class="page-link" href="#" onclick="changePageTo(${i}, event)">${i}</a>`;
+            paginationElement.appendChild(pageItem);
+        }
+
+        // nut qua trang tiep theo
+        const nextButton = document.createElement("li");
+        nextButton.className = "page-item";
+        nextButton.innerHTML = `<button class="page-link" onclick="changePage('next', event)"><span aria-hidden="true">&raquo;</span></button`;
+        paginationElement.appendChild(nextButton);
+    }
+
+    function changePage(direction, event) {
+        event.preventDefault();
+        if (direction === 'next' && currentPage < pageSize-1) {
+            currentPage ++;
+        }
+        else if (direction === 'prev' && currentPage > 0) {
+            currentPage --;
+        }
+        searchListings();
+    }
+
+    function changePageTo(pageNumber, event) {
+        event.preventDefault();
+        currentPage = pageNumber - 1;
+        searchListings();
+    }
+
+    window.onload = function () {
+        searchListings();
+    }
+</script>
